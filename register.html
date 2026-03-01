@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SIMS - Register</title>
+    <link rel="stylesheet" href="style/responsivenes.css">
+    <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    <fieldset>
+             <div class="logo">
+        <h2><img src="img/signal-status.png" class="log">   SIMS|<p>Stock Inventory <br>Management System</p></h2>
+        
+    </div>
+         
+<div class="card" >
+  
+    <h3>Create New Account</h3>
+        <form id="registerForm">
+
+       <label class="name"> <img src="img/user.png"  class="icon"> Full Name</label>
+        <div class="input-group">
+            <img src="img/user.png" class="icon  ">
+          <input type="text" id="fullname" placeholder="Enter your full name" required>
+        </div>
+
+        <label class="email"> <img src="img/envelope.png"  class="icon"> Email Address</label>
+        <div class="input-group">
+            <img src="img/envelope.png" class="icon">
+            <input type="email" id="email" placeholder="Enter your email" required>
+        </div>
+
+        <label class="pass" > <img src="img/padlock.png"  class="icon"> Password</label>
+        <div class="input-group">
+            <img src="img/padlock.png" class="icon">
+            <input type="password" id="password" placeholder="Create a password" required>
+        </div>
+
+        <label > <img src="img/padlock.png"  class="icon"> Confirm Password</label>
+        <div class="input-group">
+            <img src="img/padlock.png" class="icon">
+            <input type="password" id="confirmPassword" placeholder="Confirm your password" required>
+        </div>
+
+        <button type="submit">Register Account</button>
+
+    </form>
+     <p style="margin-top: 20px;">Already have an account? <a href="login.html">Login</a></p>
+     <p id="errorMsg"></p>
+</div>
+</fieldset>
+<script src="app.js"></script>
+</body>
+</html>

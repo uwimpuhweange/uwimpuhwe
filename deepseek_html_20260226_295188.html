@@ -1,0 +1,1608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIMS - Stock Inventory Dashboard</title>
+    <link rel="stylesheet" href="style/responsivenes.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Additional dashboard styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f4f7fc;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        /* Dashboard Layout */
+        .dashboard {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: #2c3e50;
+            color: white;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: all 0.3s;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo img {
+            width: 32px;
+            height: 32px;
+            filter: brightness(0) invert(1);
+        }
+
+        .logo h2 {
+            font-size: 18px;
+            line-height: 1.3;
+            color: white;
+        }
+
+        .logo p {
+            font-size: 11px;
+            opacity: 0.8;
+            font-weight: normal;
+            color: white;
+        }
+
+        .user-info {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            background: #3498db;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            text-transform: uppercase;
+        }
+
+        .user-details h4 {
+            font-size: 14px;
+            margin-bottom: 4px;
+            color: white;
+        }
+
+        .user-details span {
+            font-size: 12px;
+            opacity: 0.7;
+            color: white;
+        }
+
+        .nav-menu {
+            padding: 20px 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: rgba(255,255,255,0.8);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .nav-item i {
+            width: 20px;
+            font-size: 16px;
+        }
+
+        .nav-item .badge {
+            margin-left: auto;
+            background: #e74c3c;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 20px 30px;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .page-title h2 {
+            color: #2c3e50;
+            font-size: 22px;
+        }
+
+        .page-title p {
+            color: #95a5a6;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: #ecf0f1;
+            padding: 8px 15px;
+            border-radius: 25px;
+            gap: 10px;
+        }
+
+        .search-box input {
+            border: none;
+            background: none;
+            outline: none;
+            width: 200px;
+            font-size: 14px;
+        }
+
+        .search-box i {
+            color: #95a5a6;
+        }
+
+        .notification {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .notification i {
+            font-size: 20px;
+            color: #2c3e50;
+        }
+
+        .notification::after {
+            content: '3';
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #e74c3c;
+            color: white;
+            font-size: 10px;
+            padding: 2px 5px;
+            border-radius: 10px;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stat-info h3 {
+            font-size: 13px;
+            color: #95a5a6;
+            font-weight: normal;
+            margin-bottom: 8px;
+        }
+
+        .stat-info .number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #3498db;
+            font-size: 24px;
+        }
+
+        .stat-card.warning .stat-icon {
+            background: rgba(243, 156, 18, 0.1);
+            color: #f39c12;
+        }
+
+        .stat-card.success .stat-icon {
+            background: rgba(39, 174, 96, 0.1);
+            color: #27ae60;
+        }
+
+        .stat-card.danger .stat-icon {
+            background: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+        }
+
+        /* Charts Row */
+        .charts-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .chart-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-header h3 {
+            font-size: 16px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chart-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .chart-actions button {
+            padding: 4px 12px;
+            border: 1px solid #ecf0f1;
+            background: white;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .chart-actions button:hover,
+        .chart-actions button.active {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        canvas {
+            max-height: 250px;
+            width: 100% !important;
+        }
+
+        /* Low Stock Alert */
+        .alert-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .alert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .alert-header h3 {
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .alert-header h3 i {
+            color: #f39c12;
+        }
+
+        .alert-badge {
+            background: #e74c3c;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+
+        .alert-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .alert-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: #fff5f5;
+            border-radius: 8px;
+            border-left: 3px solid #e74c3c;
+        }
+
+        .alert-item-info h4 {
+            font-size: 14px;
+            color: #2c3e50;
+        }
+
+        .alert-item-info p {
+            font-size: 12px;
+            color: #95a5a6;
+            margin-top: 4px;
+        }
+
+        .alert-item .stock {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+
+        /* Tables */
+        .recent-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-header h3 {
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .view-all {
+            color: #3498db;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px;
+            color: #95a5a6;
+            font-weight: 500;
+            font-size: 13px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ecf0f1;
+            font-size: 14px;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-badge.in-stock {
+            background: rgba(39, 174, 96, 0.1);
+            color: #27ae60;
+        }
+
+        .status-badge.low-stock {
+            background: rgba(243, 156, 18, 0.1);
+            color: #f39c12;
+        }
+
+        .status-badge.out-of-stock {
+            background: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            background: #3498db;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+
+        .action-btn.edit {
+            background: #2c3e50;
+        }
+
+        .action-btn.danger {
+            background: #e74c3c;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .quick-action-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .quick-action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .quick-action-icon {
+            width: 45px;
+            height: 45px;
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #3498db;
+            font-size: 20px;
+        }
+
+        .quick-action-info h4 {
+            color: #2c3e50;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .quick-action-info p {
+            color: #95a5a6;
+            font-size: 12px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-content h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .modal-content input,
+        .modal-content select,
+        .modal-content textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ecf0f1;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .modal-content input:focus,
+        .modal-content select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .btn-primary, .btn-secondary {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-secondary {
+            background: #ecf0f1;
+            color: #2c3e50;
+        }
+
+        .btn-secondary:hover {
+            background: #bdc3c7;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                position: fixed;
+                z-index: 100;
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .charts-row {
+                grid-template-columns: 1fr;
+            }
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+            .top-bar {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .search-box input {
+                width: 150px;
+            }
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Welcome Message */
+        .welcome-message {
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .welcome-message h3 {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .welcome-message p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .date-display {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <img src="img/signal-status.png" alt="SIMS">
+                    <h2>SIMS<br><p>Stock Inventory Management</p></h2>
+                </div>
+            </div>
+
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">JD</div>
+                <div class="user-details">
+                    <h4 id="currentUserName">Loading...</h4>
+                    <span id="currentUserEmail">user@example.com</span>
+                </div>
+            </div>
+
+            <div class="nav-menu">
+                <div class="nav-item active" data-page="dashboard">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </div>
+                <div class="nav-item" data-page="products">
+                    <i class="fas fa-box"></i>
+                    <span>Products</span>
+                    <span class="badge" id="productsCount">0</span>
+                </div>
+                <div class="nav-item" data-page="categories">
+                    <i class="fas fa-tags"></i>
+                    <span>Categories</span>
+                </div>
+                <div class="nav-item" data-page="suppliers">
+                    <i class="fas fa-truck"></i>
+                    <span>Suppliers</span>
+                </div>
+                <div class="nav-item" data-page="orders">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Orders</span>
+                </div>
+                <div class="nav-item" data-page="reports">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Reports</span>
+                </div>
+                <div class="nav-item" data-page="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </div>
+                <div class="nav-item" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="page-title">
+                    <h2>Stock Dashboard</h2>
+                    <p>Welcome back! Here's your inventory overview</p>
+                </div>
+                <div class="top-actions">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search products..." id="searchInput">
+                    </div>
+                    <div class="notification">
+                        <i class="far fa-bell"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Welcome Message -->
+            <div class="welcome-message">
+                <div>
+                    <h3 id="welcomeGreeting">Good day, <span id="welcomeUserName">User</span>!</h3>
+                    <p>Here's what's happening with your inventory today.</p>
+                </div>
+                <div class="date-display" id="currentDate"></div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <h3>Total Products</h3>
+                        <div class="number" id="totalProducts">0</div>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-boxes"></i>
+                    </div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-info">
+                        <h3>Low Stock</h3>
+                        <div class="number" id="lowStock">0</div>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-info">
+                        <h3>Categories</h3>
+                        <div class="number" id="totalCategories">0</div>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-tags"></i>
+                    </div>
+                </div>
+                <div class="stat-card danger">
+                    <div class="stat-info">
+                        <h3>Out of Stock</h3>
+                        <div class="number" id="outOfStock">0</div>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <div class="quick-action-card" onclick="openModal('addProductModal')">
+                    <div class="quick-action-icon">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                    <div class="quick-action-info">
+                        <h4>Add Product</h4>
+                        <p>New item to inventory</p>
+                    </div>
+                </div>
+                <div class="quick-action-card" onclick="openModal('stockInModal')">
+                    <div class="quick-action-icon">
+                        <i class="fas fa-arrow-up"></i>
+                    </div>
+                    <div class="quick-action-info">
+                        <h4>Stock In</h4>
+                        <p>Receive stock</p>
+                    </div>
+                </div>
+                <div class="quick-action-card" onclick="openModal('stockOutModal')">
+                    <div class="quick-action-icon">
+                        <i class="fas fa-arrow-down"></i>
+                    </div>
+                    <div class="quick-action-info">
+                        <h4>Stock Out</h4>
+                        <p>Issue stock</p>
+                    </div>
+                </div>
+                <div class="quick-action-card" onclick="generateReport()">
+                    <div class="quick-action-icon">
+                        <i class="fas fa-file-pdf"></i>
+                    </div>
+                    <div class="quick-action-info">
+                        <h4>Reports</h4>
+                        <p>Generate report</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="charts-row">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3><i class="fas fa-chart-line"></i> Stock Movement</h3>
+                        <div class="chart-actions">
+                            <button class="active" data-period="week">Week</button>
+                            <button data-period="month">Month</button>
+                        </div>
+                    </div>
+                    <canvas id="stockChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3><i class="fas fa-chart-pie"></i> Stock by Category</h3>
+                    </div>
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Low Stock Alert -->
+            <div class="alert-section">
+                <div class="alert-header">
+                    <h3><i class="fas fa-exclamation-circle"></i> Low Stock Alert</h3>
+                    <span class="alert-badge" id="alertCount">0 Items</span>
+                </div>
+                <div class="alert-items" id="alertItems">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+
+            <!-- Recent Products -->
+            <div class="recent-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-clock"></i> Recent Products</h3>
+                    <span class="view-all" onclick="showAllProducts()">View All <i class="fas fa-arrow-right"></i></span>
+                </div>
+                <table id="productsTable">
+                    <thead>
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Stock</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productsTableBody">
+                        <tr>
+                            <td colspan="6" style="text-align: center;">Loading products...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal" id="addProductModal">
+        <div class="modal-content">
+            <h2><i class="fas fa-plus-circle"></i> Add New Product</h2>
+            <input type="text" id="productName" placeholder="Product Name">
+            <select id="productCategory">
+                <option value="">Select Category</option>
+                <option value="Electronics">Electronics</option>
+                <option value="Furniture">Furniture</option>
+                <option value="Stationery">Stationery</option>
+                <option value="Clothing">Clothing</option>
+                <option value="Food">Food</option>
+            </select>
+            <input type="number" id="productPrice" placeholder="Price ($)">
+            <input type="number" id="productStock" placeholder="Initial Stock">
+            <select id="productSupplier">
+                <option value="">Select Supplier</option>
+                <option value="Supplier A">Supplier A</option>
+                <option value="Supplier B">Supplier B</option>
+                <option value="Supplier C">Supplier C</option>
+            </select>
+            <div class="modal-buttons">
+                <button class="btn-secondary" onclick="closeModal('addProductModal')">Cancel</button>
+                <button class="btn-primary" onclick="addProduct()">Add Product</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="stockInModal">
+        <div class="modal-content">
+            <h2><i class="fas fa-arrow-up"></i> Stock In</h2>
+            <select id="stockInProduct">
+                <option value="">Select Product</option>
+            </select>
+            <input type="number" id="stockInQuantity" placeholder="Quantity">
+            <input type="text" id="stockInSupplier" placeholder="Supplier Name">
+            <input type="date" id="stockInDate" value="<?php echo date('Y-m-d'); ?>">
+            <textarea id="stockInNotes" placeholder="Notes (optional)"></textarea>
+            <div class="modal-buttons">
+                <button class="btn-secondary" onclick="closeModal('stockInModal')">Cancel</button>
+                <button class="btn-primary" onclick="stockIn()">Process Stock In</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="stockOutModal">
+        <div class="modal-content">
+            <h2><i class="fas fa-arrow-down"></i> Stock Out</h2>
+            <select id="stockOutProduct">
+                <option value="">Select Product</option>
+            </select>
+            <input type="number" id="stockOutQuantity" placeholder="Quantity">
+            <select id="stockOutReason">
+                <option value="">Select Reason</option>
+                <option value="Sale">Sale</option>
+                <option value="Damage">Damage/Loss</option>
+                <option value="Return">Return to Supplier</option>
+                <option value="Transfer">Transfer</option>
+            </select>
+            <input type="text" id="stockOutDepartment" placeholder="Department/Customer">
+            <textarea id="stockOutNotes" placeholder="Notes (optional)"></textarea>
+            <div class="modal-buttons">
+                <button class="btn-secondary" onclick="closeModal('stockOutModal')">Cancel</button>
+                <button class="btn-primary" onclick="stockOut()">Process Stock Out</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="viewProductModal">
+        <div class="modal-content">
+            <h2><i class="fas fa-eye"></i> Product Details</h2>
+            <div id="productDetails"></div>
+            <div class="modal-buttons">
+                <button class="btn-secondary" onclick="closeModal('viewProductModal')">Close</button>
+                <button class="btn-primary" onclick="editCurrentProduct()">Edit</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="editProductModal">
+        <div class="modal-content">
+            <h2><i class="fas fa-edit"></i> Edit Product</h2>
+            <input type="hidden" id="editProductId">
+            <input type="text" id="editProductName" placeholder="Product Name">
+            <select id="editProductCategory">
+                <option value="Electronics">Electronics</option>
+                <option value="Furniture">Furniture</option>
+                <option value="Stationery">Stationery</option>
+                <option value="Clothing">Clothing</option>
+                <option value="Food">Food</option>
+            </select>
+            <input type="number" id="editProductPrice" placeholder="Price">
+            <input type="number" id="editProductStock" placeholder="Stock">
+            <div class="modal-buttons">
+                <button class="btn-secondary" onclick="closeModal('editProductModal')">Cancel</button>
+                <button class="btn-primary" onclick="updateProduct()">Update</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================
+        // DASHBOARD PROTECTION (from app.js)
+        // ==========================
+        if(window.location.pathname.includes("dashboard.html")){
+            const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+
+            if(!currentUser){
+                window.location.href = "login.html";
+            }
+        }
+
+        // Get current user
+        const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+
+        // ==========================
+        // INITIALIZATION
+        // ==========================
+        document.addEventListener('DOMContentLoaded', function() {
+            // Display user info
+            if (currentUser) {
+                document.getElementById('currentUserName').textContent = currentUser.fullname || 'User';
+                document.getElementById('currentUserEmail').textContent = currentUser.email || '';
+                document.getElementById('welcomeUserName').textContent = currentUser.fullname || 'User';
+                
+                // Set avatar
+                const initials = (currentUser.fullname || 'User').split(' ').map(n => n[0]).join('').toUpperCase();
+                document.getElementById('userAvatar').textContent = initials.substring(0, 2);
+            }
+
+            // Set current date
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', options);
+
+            // Set greeting based on time
+            const hour = new Date().getHours();
+            let greeting = 'Good day';
+            if (hour < 12) greeting = 'Good morning';
+            else if (hour < 18) greeting = 'Good afternoon';
+            else greeting = 'Good evening';
+            document.getElementById('welcomeGreeting').innerHTML = `${greeting}, <span id="welcomeUserName">${currentUser?.fullname || 'User'}</span>!`;
+
+            // Load dashboard data
+            loadDashboardData();
+        });
+
+        // ==========================
+        // SAMPLE DATA
+        // ==========================
+        let products = [
+            { id: 1, name: 'iPhone 13', category: 'Electronics', price: 999, stock: 45, supplier: 'Supplier A', lastUpdated: '2024-01-15' },
+            { id: 2, name: 'MacBook Pro', category: 'Electronics', price: 1299, stock: 12, supplier: 'Supplier A', lastUpdated: '2024-01-14' },
+            { id: 3, name: 'Office Desk', category: 'Furniture', price: 350, stock: 5, supplier: 'Supplier B', lastUpdated: '2024-01-13' },
+            { id: 4, name: 'A4 Paper Box', category: 'Stationery', price: 25, stock: 0, supplier: 'Supplier C', lastUpdated: '2024-01-12' },
+            { id: 5, name: 'Wireless Mouse', category: 'Electronics', price: 45, stock: 28, supplier: 'Supplier A', lastUpdated: '2024-01-15' },
+            { id: 6, name: 'Office Chair', category: 'Furniture', price: 280, stock: 3, supplier: 'Supplier B', lastUpdated: '2024-01-14' },
+            { id: 7, name: 'Pens (Pack)', category: 'Stationery', price: 8, stock: 150, supplier: 'Supplier C', lastUpdated: '2024-01-13' },
+            { id: 8, name: 'iPad Air', category: 'Electronics', price: 599, stock: 18, supplier: 'Supplier A', lastUpdated: '2024-01-15' },
+            { id: 9, name: 'Filing Cabinet', category: 'Furniture', price: 120, stock: 7, supplier: 'Supplier B', lastUpdated: '2024-01-12' },
+            { id: 10, name: 'Stapler', category: 'Stationery', price: 12, stock: 45, supplier: 'Supplier C', lastUpdated: '2024-01-11' }
+        ];
+
+        let stockMovements = [
+            { date: 'Mon', in: 45, out: 23 },
+            { date: 'Tue', in: 38, out: 31 },
+            { date: 'Wed', in: 52, out: 28 },
+            { date: 'Thu', in: 41, out: 35 },
+            { date: 'Fri', in: 63, out: 42 },
+            { date: 'Sat', in: 22, out: 18 }
+        ];
+
+        let categories = [...new Set(products.map(p => p.category))];
+        let suppliers = [...new Set(products.map(p => p.supplier))];
+
+        // ==========================
+        // DASHBOARD FUNCTIONS
+        // ==========================
+        function loadDashboardData() {
+            updateStats();
+            loadProductsTable();
+            loadAlertItems();
+            initializeCharts();
+            updateProductCount();
+            updateDropdowns();
+        }
+
+        function updateStats() {
+            document.getElementById('totalProducts').textContent = products.length;
+            document.getElementById('lowStock').textContent = products.filter(p => p.stock > 0 && p.stock < 10).length;
+            document.getElementById('totalCategories').textContent = categories.length;
+            document.getElementById('outOfStock').textContent = products.filter(p => p.stock === 0).length;
+            document.getElementById('alertCount').textContent = products.filter(p => p.stock < 10).length + ' Items';
+            document.getElementById('productsCount').textContent = products.length;
+        }
+
+        function loadProductsTable() {
+            const tbody = document.getElementById('productsTableBody');
+            if (!tbody) return;
+            
+            tbody.innerHTML = '';
+            
+            if (products.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No products found</td></tr>';
+                return;
+            }
+            
+            products.slice(0, 5).forEach(product => {
+                const status = product.stock === 0 ? 'out-of-stock' : product.stock < 10 ? 'low-stock' : 'in-stock';
+                const statusText = product.stock === 0 ? 'Out of Stock' : product.stock < 10 ? 'Low Stock' : 'In Stock';
+                
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${product.name}</td>
+                    <td>${product.category}</td>
+                    <td>$${product.price}</td>
+                    <td>${product.stock}</td>
+                    <td><span class="status-badge ${status}">${statusText}</span></td>
+                    <td>
+                        <button class="action-btn" onclick="viewProduct(${product.id})"><i class="fas fa-eye"></i></button>
+                        <button class="action-btn edit" onclick="editProduct(${product.id})"><i class="fas fa-edit"></i></button>
+                        <button class="action-btn danger" onclick="deleteProduct(${product.id})"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+            });
+        }
+
+        function loadAlertItems() {
+            const alertContainer = document.getElementById('alertItems');
+            if (!alertContainer) return;
+            
+            const lowStockItems = products.filter(p => p.stock < 10 && p.stock > 0);
+            
+            if (lowStockItems.length === 0) {
+                alertContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #27ae60;">✓ All products have sufficient stock</div>';
+                return;
+            }
+            
+            alertContainer.innerHTML = lowStockItems.map(item => `
+                <div class="alert-item">
+                    <div class="alert-item-info">
+                        <h4>${item.name}</h4>
+                        <p>${item.category} - Min: 10 units</p>
+                    </div>
+                    <div class="stock">${item.stock} left</div>
+                </div>
+            `).join('');
+        }
+
+        function updateDropdowns() {
+            const stockInSelect = document.getElementById('stockInProduct');
+            const stockOutSelect = document.getElementById('stockOutProduct');
+            
+            if (stockInSelect) {
+                stockInSelect.innerHTML = '<option value="">Select Product</option>' + 
+                    products.map(p => `<option value="${p.id}">${p.name} (Stock: ${p.stock})</option>`).join('');
+            }
+            
+            if (stockOutSelect) {
+                stockOutSelect.innerHTML = '<option value="">Select Product</option>' + 
+                    products.map(p => `<option value="${p.id}">${p.name} (Stock: ${p.stock})</option>`).join('');
+            }
+        }
+
+        function updateProductCount() {
+            const count = products.length;
+            document.getElementById('productsCount').textContent = count;
+        }
+
+        // ==========================
+        // CHART FUNCTIONS
+        // ==========================
+        let stockChart, categoryChart;
+
+        function initializeCharts() {
+            // Destroy existing charts if they exist
+            if (stockChart) stockChart.destroy();
+            if (categoryChart) categoryChart.destroy();
+
+            // Stock Movement Chart
+            const ctx1 = document.getElementById('stockChart').getContext('2d');
+            stockChart = new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: stockMovements.map(m => m.date),
+                    datasets: [
+                        {
+                            label: 'Stock In',
+                            data: stockMovements.map(m => m.in),
+                            borderColor: '#27ae60',
+                            backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Stock Out',
+                            data: stockMovements.map(m => m.out),
+                            borderColor: '#e74c3c',
+                            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            // Category Chart
+            const ctx2 = document.getElementById('categoryChart').getContext('2d');
+            
+            // Count products per category
+            const categoryCounts = categories.map(cat => 
+                products.filter(p => p.category === cat).length
+            );
+            
+            categoryChart = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: categories,
+                    datasets: [{
+                        data: categoryCounts,
+                        backgroundColor: ['#3498db', '#f39c12', '#2ecc71', '#9b59b6', '#e74c3c'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
+        // ==========================
+        // MODAL FUNCTIONS
+        // ==========================
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+            
+            // Update dropdowns for stock modals
+            if (modalId === 'stockInModal' || modalId === 'stockOutModal') {
+                updateDropdowns();
+            }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            
+            // Clear form inputs
+            if (modalId === 'addProductModal') {
+                document.getElementById('productName').value = '';
+                document.getElementById('productCategory').value = '';
+                document.getElementById('productPrice').value = '';
+                document.getElementById('productStock').value = '';
+                document.getElementById('productSupplier').value = '';
+            }
+        }
+
+        // ==========================
+        // PRODUCT FUNCTIONS
+        // ==========================
+        function addProduct() {
+            const name = document.getElementById('productName').value;
+            const category = document.getElementById('productCategory').value;
+            const price = parseFloat(document.getElementById('productPrice').value);
+            const stock = parseInt(document.getElementById('productStock').value);
+            const supplier = document.getElementById('productSupplier').value;
+            
+            if (!name || !category || !price || isNaN(stock) || !supplier) {
+                alert('Please fill all fields');
+                return;
+            }
+            
+            if (stock < 0) {
+                alert('Stock cannot be negative');
+                return;
+            }
+            
+            const newProduct = {
+                id: products.length + 1,
+                name: name,
+                category: category,
+                price: price,
+                stock: stock,
+                supplier: supplier,
+                lastUpdated: new Date().toISOString().split('T')[0]
+            };
+            
+            products.push(newProduct);
+            
+            // Update categories if new
+            if (!categories.includes(category)) {
+                categories.push(category);
+            }
+            
+            // Update suppliers if new
+            if (!suppliers.includes(supplier)) {
+                suppliers.push(supplier);
+            }
+            
+            loadDashboardData();
+            closeModal('addProductModal');
+            
+            alert(`Product "${name}" added successfully!`);
+        }
+
+        function viewProduct(id) {
+            const product = products.find(p => p.id === id);
+            if (!product) return;
+            
+            const detailsDiv = document.getElementById('productDetails');
+            detailsDiv.innerHTML = `
+                <div style="margin-bottom: 15px;">
+                    <p><strong>Name:</strong> ${product.name}</p>
+                    <p><strong>Category:</strong> ${product.category}</p>
+                    <p><strong>Price:</strong> $${product.price}</p>
+                    <p><strong>Stock:</strong> ${product.stock}</p>
+                    <p><strong>Supplier:</strong> ${product.supplier}</p>
+                    <p><strong>Last Updated:</strong> ${product.lastUpdated}</p>
+                    <p><strong>Status:</strong> <span class="status-badge ${product.stock === 0 ? 'out-of-stock' : product.stock < 10 ? 'low-stock' : 'in-stock'}">${product.stock === 0 ? 'Out of Stock' : product.stock < 10 ? 'Low Stock' : 'In Stock'}</span></p>
+                </div>
+            `;
+            
+            openModal('viewProductModal');
+        }
+
+        function editProduct(id) {
+            const product = products.find(p => p.id === id);
+            if (!product) return;
+            
+            document.getElementById('editProductId').value = product.id;
+            document.getElementById('editProductName').value = product.name;
+            document.getElementById('editProductCategory').value = product.category;
+            document.getElementById('editProductPrice').value = product.price;
+            document.getElementById('editProductStock').value = product.stock;
+            
+            openModal('editProductModal');
+        }
+
+        function updateProduct() {
+            const id = parseInt(document.getElementById('editProductId').value);
+            const name = document.getElementById('editProductName').value;
+            const category = document.getElementById('editProductCategory').value;
+            const price = parseFloat(document.getElementById('editProductPrice').value);
+            const stock = parseInt(document.getElementById('editProductStock').value);
+            
+            const product = products.find(p => p.id === id);
+            if (product) {
+                product.name = name;
+                product.category = category;
+                product.price = price;
+                product.stock = stock;
+                product.lastUpdated = new Date().toISOString().split('T')[0];
+                
+                loadDashboardData();
+                closeModal('editProductModal');
+                alert('Product updated successfully!');
+            }
+        }
+
+        function deleteProduct(id) {
+            if (confirm('Are you sure you want to delete this product?')) {
+                products = products.filter(p => p.id !== id);
+                loadDashboardData();
+                alert('Product deleted successfully!');
+            }
+        }
+
+        function editCurrentProduct() {
+            closeModal('viewProductModal');
+            // Get the last viewed product ID
+            // This is a simplified version
+        }
+
+        // ==========================
+        // STOCK FUNCTIONS
+        // ==========================
+        function stockIn() {
+            const productId = parseInt(document.getElementById('stockInProduct').value);
+            const quantity = parseInt(document.getElementById('stockInQuantity').value);
+            const supplier = document.getElementById('stockInSupplier').value;
+            const date = document.getElementById('stockInDate').value;
+            const notes = document.getElementById('stockInNotes').value;
+            
+            if (!productId || !quantity || !supplier) {
+                alert('Please fill all required fields');
+                return;
+            }
+            
+            if (quantity <= 0) {
+                alert('Quantity must be positive');
+                return;
+            }
+            
+            const product = products.find(p => p.id === productId);
+            if (product) {
+                product.stock += quantity;
+                product.lastUpdated = date;
+                
+                // Add to stock movements
+                stockMovements.push({
+                    date: new Date().toLocaleString('en-us', { weekday: 'short' }),
+                    in: quantity,
+                    out: 0
+                });
+                
+                loadDashboardData();
+                closeModal('stockInModal');
+                
+                // Clear inputs
+                document.getElementById('stockInQuantity').value = '';
+                document.getElementById('stockInSupplier').value = '';
+                document.getElementById('stockInNotes').value = '';
+                
+                alert(`Added ${quantity} units to ${product.name}`);
+            }
+        }
+
+        function stockOut() {
+            const productId = parseInt(document.getElementById('stockOutProduct').value);
+            const quantity = parseInt(document.getElementById('stockOutQuantity').value);
+            const reason = document.getElementById('stockOutReason').value;
+            const department = document.getElementById('stockOutDepartment').value;
+            const notes = document.getElementById('stockOutNotes').value;
+            
+            if (!productId || !quantity || !reason) {
+                alert('Please fill all required fields');
+                return;
+            }
+            
+            if (quantity <= 0) {
+                alert('Quantity must be positive');
+                return;
+            }
+            
+            const product = products.find(p => p.id === productId);
+            if (product) {
+                if (product.stock >= quantity) {
+                    product.stock -= quantity;
+                    product.lastUpdated = new Date().toISOString().split('T')[0];
+                    
+                    // Add to stock movements
+                    stockMovements.push({
+                        date: new Date().toLocaleString('en-us', { weekday: 'short' }),
+                        in: 0,
+                        out: quantity
+                    });
+                    
+                    loadDashboardData();
+                    closeModal('stockOutModal');
+                    
+                    // Clear inputs
+                    document.getElementById('stockOutQuantity').value = '';
+                    document.getElementById('stockOutReason').value = '';
+                    document.getElementById('stockOutDepartment').value = '';
+                    document.getElementById('stockOutNotes').value = '';
+                    
+                    alert(`Removed ${quantity} units from ${product.name}`);
+                } else {
+                    alert(`Insufficient stock! Available: ${product.stock}`);
+                }
+            }
+        }
+
+        // ==========================
+        // SEARCH FUNCTION
+        // ==========================
+        document.getElementById('searchInput')?.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            
+            if (searchTerm.length < 2) {
+                loadProductsTable();
+                return;
+            }
+            
+            const filtered = products.filter(p => 
+                p.name.toLowerCase().includes(searchTerm) || 
+                p.category.toLowerCase().includes(searchTerm) ||
+                p.supplier.toLowerCase().includes(searchTerm)
+            );
+            
+            const tbody = document.getElementById('productsTableBody');
+            tbody.innerHTML = '';
+            
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No products found</td></tr>';
+                return;
+            }
+            
+            filtered.slice(0, 5).forEach(product => {
+                const status = product.stock === 0 ? 'out-of-stock' : product.stock < 10 ? 'low-stock' : 'in-stock';
+                const statusText = product.stock === 0 ? 'Out of Stock' : product.stock < 10 ? 'Low Stock' : 'In Stock';
+                
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${product.name}</td>
+                    <td>${product.category}</td>
+                    <td>$${product.price}</td>
+                    <td>${product.stock}</td>
+                    <td><span class="status-badge ${status}">${statusText}</span></td>
+                    <td>
+                        <button class="action-btn" onclick="viewProduct(${product.id})"><i class="fas fa-eye"></i></button>
+                        <button class="action-btn edit" onclick="editProduct(${product.id})"><i class="fas fa-edit"></i></button>
+                        <button class="action-btn danger" onclick="deleteProduct(${product.id})"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+            });
+        });
+
+        // ==========================
+        // NAVIGATION
+        // ==========================
+        document.querySelectorAll('.nav-item[data-page]').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                this.classList.add('active');
+                
+                const page = this.dataset.page;
+                document.querySelector('.page-title h2').textContent = page.charAt(0).toUpperCase() + page.slice(1) + ' Management';
+                
+                if (page === 'products') {
+                    showAllProducts();
+                } else {
+                    alert(`Navigating to ${page} page... (Demo version)`);
+                }
+            });
+        });
+
+        function showAllProducts() {
+            // In a real app, this would navigate to products page
+            alert('Viewing all products - This would show full product list');
+        }
+
+        function generateReport() {
+            alert('Generating inventory report...\nThis would download a PDF/Excel file');
+        }
+
+        // ==========================
+        // CHART PERIOD CHANGE
+        // ==========================
+        document.querySelectorAll('[data-period]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('[data-period]').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                if (this.dataset.period === 'month' && stockChart) {
+                    // Update to monthly data
+                    stockChart.data.labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+                    stockChart.data.datasets[0].data = [180, 220, 195, 240];
+                    stockChart.data.datasets[1].data = [145, 168, 152, 189];
+                } else if (stockChart) {
+                    // Back to weekly
+                    stockChart.data.labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                    stockChart.data.datasets[0].data = [45, 38, 52, 41, 63, 22];
+                    stockChart.data.datasets[1].data = [23, 31, 28, 35, 42, 18];
+                }
+                stockChart.update();
+            });
+        });
+
+        // ==========================
+        // LOGOUT FUNCTION (from app.js)
+        // ==========================
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem("currentUser");
+                window.location.href = "login.html";
+            }
+        }
+    </script>
+</body>
+</html>
